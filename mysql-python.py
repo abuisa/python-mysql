@@ -1,9 +1,11 @@
 #!/usr/bin/python
+
 import os
 import hashlib
 import MySQLdb
 from time import gmtime, strftime
-
+from termcolor import colored
+import sys
 #--- -----------------------------
 """ 
 1.SCRIPT UNTUK AMBIL DATA DARI MYSQL DATABASE DAN BENTUK MENJADI FILE A
@@ -14,6 +16,7 @@ CONTOH FILE A :
 -----------------------------
 2.SCRIPT UNTUK INPUT DATA KE TABEL MYSQL 
 CONTOH DIBAWAH : masukkandata() dan masukkandata1().
+3.TABEL tflist2 ADALAH TABEL UNTUK LATIHAN NYATA
 """
 #--- -----------------------------
 #--- FUNGSI fwrite() dan FUNGSI tulislog 
@@ -34,7 +37,7 @@ def tulislog(fl,s):
 db = MySQLdb.connect(host="localhost",    # your host, usually localhost
                      user="root",         # your username
                      passwd="yourpass",  # your password
-                     db="dbfilelist")        # name of the data base
+                     db="dbflist")        # name of the data base
 
 # you must create a Cursor object. It will let
 #  you execute all the queries you need
@@ -47,8 +50,8 @@ def strquery(sql):
 	print " Suksesss Process Data..."
 # --- ----CHECKING DATA -----
 def checkdata(s):
-	#cur.execute("SELECT COUNT(1) FROM tflist1 WHERE flist like '%"+s+"%'") # yang ini OK, Hampir Perfect
-	cur.execute("SELECT COUNT(1) FROM tflist1 WHERE flist like '"+s+"%'")		
+	#cur.execute("SELECT COUNT(1) FROM tflist2 WHERE flist like '%"+s+"%'") # yang ini OK, Hampir Perfect
+	cur.execute("SELECT COUNT(1) FROM tflist2 WHERE flist like '"+s+"%'")		
 	if cur.fetchone()[0]:
 		return "1"
 	else:
@@ -65,8 +68,8 @@ def showquery(sql):
 # --- ----END FOR QUERY SHOW DATA -----
 # --- -------SHOW DATA ----- OK
 def showdata():
-	#cur.execute("SELECT * FROM tflist1 WHERE flist like '%TESSS%'")
-	cur.execute("SELECT * FROM tflist1")
+	#cur.execute("SELECT * FROM tflist2 WHERE flist like '%TESSS%'")
+	cur.execute("SELECT * FROM tflist2 LIMIT 20")
 	for row in cur.fetchall():
 		print row[2] +"  " + row[1]
 	print "--------END---DATA-----------"
@@ -74,7 +77,7 @@ def showdata():
 
 # --- ----- INSERT DATA TEST---------- OK
 def tesmasukkandata():
-	cur.execute("INSERT INTO `tflist1` (id, `flist`, `hash`,`addt`) VALUES (1111111, 'tes-TESSSSS.conf', 'TESSSSa5221', '2017-03-28 17:39')")
+	cur.execute("INSERT INTO `tflist2` (id, `flist`, `hash`,`addt`) VALUES (1111111, 'tes-TESSSSS.conf', 'TESSSSa5221', '2017-03-28 17:39')")
 	cur.fetchall()
 	db.commit()
 	print " Suksesss Tes Input Data..."
@@ -83,7 +86,7 @@ def tesmasukkandata():
 # --- ------TES Input Data From Another Process -----
 def masukkandata(d1,d2):
 	d3 = strftime("%Y-%m-%d %H:%M", gmtime())
-	cur.execute("INSERT INTO `tflist1` (id, `flist`, `hash`,`addt`) VALUES (null, '"+d1+"','"+d2+"','"+d3+"')")
+	cur.execute("INSERT INTO `tflist2` (id, `flist`, `hash`,`addt`) VALUES (null, '"+d1+"','"+d2+"','"+d3+"')")
 	cur.fetchall()
 	db.commit()
 	#print " Suksesss Input Data..."
@@ -98,6 +101,7 @@ def processDirectory ( args, dirname, filenames ):
 		if os.path.isfile(dirfile):
 			if checkdata(dirfile) == "0":
 				fwrite("newdata.txt",dirfile)
+				print colored(dirfile, 'red')
 				try:
 					md = hashlib.md5(open(dirfile,'rb').read()).hexdigest()
 					masukkandata(dirfile,md)
@@ -106,6 +110,7 @@ def processDirectory ( args, dirname, filenames ):
 			else:
 				#print "SUDAH : "+ dirfile
 				fwrite("olddata.txt",dirfile)
+				print colored(dirfile, 'green')
 
 
 def listDir(direktori):
@@ -116,11 +121,12 @@ def listDir(direktori):
 #listDir(s)
 # --- ------END FUNCTION LIST DIR-------------
 
-print "\t 1.Tampilkan Data\n\t 2.Tes Operasi Data\n\t \
-3.Input Data From A Directory\n\t 4.Delete All Data From tflist1\n\t \
+print "\t 1.Tampilkan Data Hanya 20 Baris\n\t 2.Tes Operasi (Check data) input data yang akan di check\n\t \
+3.Input Data to DB From A Directory Given\n\t 4.Delete All Data From tflist2\n\t \
 5.Tes Create File\n----------------------------------"
 
 s = raw_input("Pilih No ? ")
+#s = sys.argv[1] #str(sys.argv) # INPUT FROM COMMAND ARGUMENTS exp : python python-script.py argument1 argument2 ... <enter>
 
 if s == "1":
 	showdata()
@@ -128,7 +134,7 @@ if s == "1":
 elif s == "2":
 	#tesmasukkandata()
 	s = raw_input("Input file path (exp:/home/tes.txt) : ")
-	#showquery("SELECT * FROM tflist1 WHERE flist like '%"+s+"%'")
+	#showquery("SELECT * FROM tflist2 WHERE flist like '%"+s+"%'")
 	checkdata(s)
 
 elif s == "3":
@@ -138,7 +144,7 @@ elif s == "3":
 		print " Selesai, Suksesss Input Data..."
 
 elif s == "4":
-	dt = 'tflist1'
+	dt = 'tflist2'
 	strquery("TRUNCATE TABLE "+ dt)
 	showdata()
 	
