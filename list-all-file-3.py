@@ -69,7 +69,7 @@ try:
 		#con_to_db_E() # menggunakan funsi ini terasa lambat saat load data 
 		db = pymysql.connect(host="localhost",    # your host, usually localhost /in windows use 127.0.0.1
                      user="root",         # your username
-                     passwd="abuisa",  # your password
+                     passwd="password",  # your password
                      db = g_db)        # name of the data base
 		odb = db.cursor()
 		tdb = True
@@ -181,11 +181,11 @@ def write_2file(fl,s):
 		f = open(fl,'w')
 	f.close
 
-def create_bat_shrcut(f):
+def create_bat_shrcut(f,sf):
 	try:
 		f = open(f,'w')
 		f.write('@echo off\n')
-		f.write('python D:\MI-FTI-UII\FromHome\mysql-python-windows\list-all-file-3.py\n')
+		f.write('python '+sf+'list-all-file-3.py\n')
 		#print (' Success Create bat file : '+f)
 	except:
 		f = open(f,'w')
@@ -432,7 +432,7 @@ def hash_compare(file_in):
 
 def cp_dbto():
 	global wd
-	src_dir = r'\AppData\Local\Mendeley Ltd\Mendeley Desktop\14917214@students.uii.ac.id@www.mendeley.com.sqlite'
+	src_dir = r'\AppData\Local\Mendeley Ltd\Mendeley Desktop\abuisa@yahoo.com@www.mendeley.com.sqlite'
 	des_dir = wd+'\mendeley_files.sqlite'
 	shutil.copy(up+src_dir,des_dir)
 	
